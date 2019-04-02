@@ -9,5 +9,6 @@ The command line can use the program with the following arguments:
 -help,   -h  to print this help.
 -all,    -a  to insert in white-list  all known models of unsupported Mac
 -list,   -l  print list all known models of unsupported Mac
-on which Mojave operating system it is possible to install'
+on which Mojave operating system it is possible to install
+
 only one argument is supported at one run time
