@@ -90,27 +90,36 @@ echo "\nНаходим и подключаем раздел Восстановл
                 exit
                 fi
           fi
+
 cd /Volumes/Recovery/*/
 
-
 if [  -f "PlatformSupportBackup.plist" ]; then
+    if [[ ! "ModValuesInserted" = `grep -Eo ModValuesInserted  PlatformSupport.plist` ]]; then
             if [ ! $loc = "ru" ]; then
-printf '\nRestoring PlatformSupport.plist\n\n'
+printf '\nRestoring environment after Recovery update\n'
                 else
-printf '\nВосстанавливаем оригинальный список поддержки\n'
+printf '\nВосстановление среды после обновления Recovery\n'
             fi
-sudo rm PlatformSupport.plist
-sudo mv PlatformSupportBackup.plist PlatformSupport.plist
-     else
+sudo rm PlatformSupportBackup.plist
+        if [  -f "immutablekernel.back" ]; then
+            sudo rm immutablekernel.back
+        fi
+    else
             if [ ! $loc = "ru" ]; then
-                printf '\nPlatformSupported.plist checked.\n'
-                    else
-                printf '\nБелый список поддержки проверен.\n'
+            printf '\nRestoring PlatformSupport.plist\n\n'
+                else
+            printf '\nВосстанавливаем оригинальный список поддержки\n'
             fi
-fi
+        sudo rm PlatformSupport.plist
+        sudo mv PlatformSupportBackup.plist PlatformSupport.plist
+    fi
+else
+     if [ ! $loc = "ru" ]; then
+     printf '\nPlatformSupported.plist checked.\n'
+           else
+     printf '\nБелый список поддержки проверен.\n'
+      fi
 
-if  [  -f "AllUnsupported.txt" ]; then
-sudo rm AllUnsupported.txt
 fi
 
             if [ ! $loc = "ru" ]; then
@@ -125,7 +134,7 @@ if [[ $compat_argument = "no_compat_check" ]]; then
                     else
             printf 'Да ! '$compat_argument' найден в настройках. Удаляем\n'
             fi
-            sudo sed -i '' 's/BaseSystem.dmg -no_compat_check/BaseSystem.dmg/' /Volumes/Recovery/*/com.apple.Boot.plist
+            sudo sed -i '' 's/BaseSystem.dmg -no_compat_check/BaseSystem.dmg/' com.apple.Boot.plist
     else    
             if [ ! $loc = "ru" ]; then
             printf 'com.apple.Boot.plist checked\n'

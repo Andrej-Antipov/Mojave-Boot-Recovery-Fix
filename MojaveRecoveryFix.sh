@@ -150,6 +150,7 @@ echo "\nНаходим и подключаем раздел Восстановл
                 exit
                 fi
           fi
+
 cd /Volumes/Recovery/*/
 
             if [ ! $loc = "ru" ]; then
@@ -164,12 +165,28 @@ sudo nvram boot-args="-no_compat_check"
                     else
                 echo "Сделано"
             fi
+
 if [ ! -f "PlatformSupportBackup.plist" ]; then
 sudo cp PlatformSupport.plist PlatformSupportBackup.plist
+            else
+    if [[ ! "ModValuesInserted" = `grep -Eo ModValuesInserted  PlatformSupport.plist` ]]; then
+            if [ ! $loc = "ru" ]; then
+printf '\nRestoring environment after Recovery update\n'
+                else
+printf '\nВосстановление среды после обновления Recovery\n'
+            fi
+sudo rm PlatformSupportBackup.plist
+sudo cp PlatformSupport.plist PlatformSupportBackup.plist
+        if [  -f "immutablekernel.back" ]; then
+            sudo rm immutablekernel.back
+        fi
+    fi
 fi
 
 if [ "$parm" = "-all" ] || [ "$parm" = "-a" ]; then 
-    if  [ ! -f "AllUnsupported.txt" ]; then
+    
+    if [[ ! "ModAllUnsupported" = `grep -Eo ModAllUnsupported  PlatformSupport.plist` ]]; then
+
                     if [ ! $loc = "ru" ]; then
             printf '\nAccording to the -all optional command argument\n'
             printf 'All known old Mac with unofficial Mojave support\n'
@@ -187,28 +204,30 @@ if [ "$parm" = "-all" ] || [ "$parm" = "-a" ]; then
             trap "kill $!" EXIT 
 
             for i in ${!PList_1[@]}; do
-            sudo plutil  -insert SupportedModelProperties.$i -string ${PList_1[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedModelProperties.$i -string ${PList_1[$i]} PlatformSupport.plist ; done
 
             for i in ${!PList_2[@]}; do
-            sudo plutil  -insert SupportedModelProperties.$i -string ${PList_2[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedModelProperties.$i -string ${PList_2[$i]} PlatformSupport.plist ; done
 
             for i in ${!PList_3[@]}; do
-            sudo plutil  -insert SupportedModelProperties.$i -string ${PList_3[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedModelProperties.$i -string ${PList_3[$i]} PlatformSupport.plist ; done
 
             for i in ${!BList_1[@]}; do
-            sudo plutil  -insert SupportedBoardIds.$i -string ${BList_1[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedBoardIds.$i -string ${BList_1[$i]} PlatformSupport.plist ; done
 
             for i in ${!BList_2[@]}; do
-            sudo plutil  -insert SupportedBoardIds.$i -string ${BList_2[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedBoardIds.$i -string ${BList_2[$i]} PlatformSupport.plist ; done
 
             for i in ${!BList_3[@]}; do
-            sudo plutil  -insert SupportedBoardIds.$i -string ${BList_3[$i]} PlatformSupport.plist ; done
+            sudo plutil  -replace SupportedBoardIds.$i -string ${BList_3[$i]} PlatformSupport.plist ; done
 
             kill $!
             wait $! 2>/dev/null
             trap " " EXIT
             
-            sudo touch "AllUnsupported.txt"
+#            sudo touch "AllUnsupported.txt"
+            sudo plutil  -replace ModAllUnsupported -bool YES PlatformSupport.plist
+            sudo plutil  -replace ModValuesInserted -bool YES PlatformSupport.plist
 
             printf '\n'
     else
@@ -246,7 +265,8 @@ if [[ ! $board = $supported_board ]]; then
                 else
             printf 'Добавляем ваш идентификатор в списки\n'
             fi
-            sudo plutil  -insert SupportedBoardIds.0 -string $board PlatformSupport.plist
+            sudo plutil  -replace SupportedBoardIds.0 -string $board PlatformSupport.plist
+            sudo plutil  -replace ModValuesInserted -bool YES PlatformSupport.plist
         else
             printf 'OK ! '$board' \n' 
 fi
@@ -257,7 +277,8 @@ if [[ ! $product = $supported_product ]]; then
                     else
             printf 'Добавляем вашу модель мака в списки\n'
             fi
-            sudo plutil  -insert SupportedModelProperties.0 -string $product PlatformSupport.plist
+            sudo plutil  -replace SupportedModelProperties.0 -string $product PlatformSupport.plist
+            sudo plutil  -replace ModValuesInserted -bool YES PlatformSupport.plist
         else
             printf 'OK ! '$product' \n'
 fi
@@ -275,7 +296,7 @@ if [[ $compat_argument = "no_compat_check" ]]; then
                     else
             printf 'Вписываем аргумент совместимости в настройки загрузки\n'
                 fi
-            sudo sed -i '' 's/BaseSystem.dmg/BaseSystem.dmg -no_compat_check/' /Volumes/Recovery/*/com.apple.Boot.plist
+            sudo sed -i '' 's/BaseSystem.dmg/BaseSystem.dmg -no_compat_check/' ./com.apple.Boot.plist
             
 fi
             if [ ! $loc = "ru" ]; then
@@ -284,7 +305,7 @@ printf '\nChecking whether to do prelinked kernel patch\n'
 printf '\nПроверяем необходимость патчить prelinked kernel\n'
             fi
 system=`md5 -q /System/Library/PrelinkedKernels/prelinkedkernel`
-recovery=`md5 -q  /Volumes/Recovery/*/immutablekernel`
+recovery=`md5 -q  immutablekernel`
 
 if [[ $system = $recovery ]]; then 
             if [ ! $loc = "ru" ]; then
@@ -306,7 +327,7 @@ if [[ $system = $recovery ]]; then
                 fi
             sudo cp immutablekernel immutablekernel.back
         fi
-        sudo cp -a /System/Library/PrelinkedKernels/prelinkedkernel /Volumes/Recovery/*/immutablekernel
+        sudo cp -a /System/Library/PrelinkedKernels/prelinkedkernel immutablekernel
             if [ ! $loc = "ru" ]; then
                 printf 'Done !\n'
                     else
