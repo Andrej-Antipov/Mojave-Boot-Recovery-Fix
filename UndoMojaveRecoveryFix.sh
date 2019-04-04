@@ -125,7 +125,7 @@ if [[ $compat_argument = "no_compat_check" ]]; then
                     else
             printf 'Да ! '$compat_argument' найден в настройках. Удаляем\n'
             fi
-            sudo perl -i -pe 's/BaseSystem.dmg -no_compat_check/BaseSystem.dmg/' /Volumes/Recovery/*/com.apple.Boot.plist
+            sudo sed -i '' 's/BaseSystem.dmg -no_compat_check/BaseSystem.dmg/' /Volumes/Recovery/*/com.apple.Boot.plist
     else    
             if [ ! $loc = "ru" ]; then
             printf 'com.apple.Boot.plist checked\n'
