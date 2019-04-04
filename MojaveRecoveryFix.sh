@@ -275,7 +275,7 @@ if [[ $compat_argument = "no_compat_check" ]]; then
                     else
             printf 'Вписываем аргумент совместимости в настройки загрузки\n'
                 fi
-            sudo perl -i -pe 's/BaseSystem.dmg/BaseSystem.dmg -no_compat_check/' /Volumes/Recovery/*/com.apple.Boot.plist
+            sudo sed -i '' 's/BaseSystem.dmg/BaseSystem.dmg -no_compat_check/' /Volumes/Recovery/*/com.apple.Boot.plist
             
 fi
             if [ ! $loc = "ru" ]; then
