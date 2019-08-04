@@ -75,15 +75,19 @@ echo "\nDetecting and mounting APFS Recovery"
             else
 echo "\nНаходим и подключаем раздел Восстановления"
         fi
+
+recovery_partition=$(diskutil list | grep -m 1 Recovery | rev | cut -f1 -d " " | rev | tr -d '\t\n')
+recovery_name=$(diskutil info $recovery_partition | grep "Volume Name:" | cut -f2 -d ":" | xargs | tr -d '\n')
+
         if [ ! $loc = "ru" ]; then
-                if diskutil mount Recovery; then
+                if diskutil mount "$recovery_name"; then
                     printf ' '
                         else
                     printf '\n!!!! ERROR. UNABLE TO CONTUNUE. BYE !!!!\n\n\n\n\n'
                 exit
                 fi
             else
-                if diskutil quiet mount Recovery; then
+                if diskutil quiet mount "$recovery_name"; then
                     printf '\nРаздел найден и подключен успешно\n'
                         else
                     printf '\n!!!! ОШИБКА. РАЗДЕЛ НЕ ПОДКЛЮЧЕН. ВЫХОД !!!!\n\n\n\n\n'
@@ -91,7 +95,7 @@ echo "\nНаходим и подключаем раздел Восстановл
                 fi
           fi
 
-cd /Volumes/Recovery/*/
+cd /Volumes/"$recovery_name"/*/
 
 if [  -f "PlatformSupportBackup.plist" ]; then
     if [[ ! "ModValuesInserted" = `grep -Eo ModValuesInserted  PlatformSupport.plist` ]]; then

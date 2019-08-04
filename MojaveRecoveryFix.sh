@@ -54,7 +54,7 @@ unsupported_product_list_3="MacBookAir2,1;MacBookAir3,1;MacBookAir3,2;MacBookAir
 
 unsupported_board_list_1="Mac-F42C88C8;Mac-F221BEC8;Mac-F227BEC8;Mac-F2218FC8;Mac-F2268CC8;Mac-F2268DC8;Mac-F221DCC8;Mac-F2268DAE;Mac-F2238AC8;Mac-F2238BAE;Mac-942B5BF58194151B;Mac-942B59F58194171B;"
 unsupported_board_list_2="Mac-F42C86C8;Mac-F42D86A9;Mac-F42D86C8;Mac-F2268EC8;Mac-F22587C8;Mac-F22587A1;Mac-F2268AC8;Mac-F22589C8;Mac-F22586C8;Mac-F222BEC8;Mac-94245B3640C91C81;Mac-94245A3940C91C80;Mac-942459F5819B171B"
-unsupported_board_list_3="Mac-F42D88C8;Mac-942452F5819B1C1B;Mac-942C5DF58193131B;Mac-C08A6BB70A942AC2;Mac-742912EFDBEE19B3;Mac-F42D89A9;Mac-F42D89C8;Mac-F22788AA;Mac-F22C8AC8;Mac-F22C89C8;Mac-F22C86C8;Mac-F2208EC8;Mac-8ED6AF5B48C039E1;Mac-4BC72D62AD45599E;Mac-7BA5B2794B2CDB12;Mac-F42289C8;Mac-F223BEC8"
+unsupported_board_list_3="Mac-F42D88C8;Mac-942452F5819B1C1B;Mac-942C5DF58193131B;Mac-C08A6BB70A942AC2;Mac-742912EFDBEE19B3;Mac-F42D89A9;Mac-F42D89C8;Mac-F22788AA;Mac-F22C8AC8;Mac-F22C89C8;Mac-F22C86C8;Mac-F2208EC8;Mac-8ED6AF5B48C039E1;Mac-4BC72D62AD45599E;Mac-7BA5B2794B2CDB12;Mac-F42289C8"
 
 
 IFS=';' 
@@ -135,15 +135,19 @@ echo "\nDetecting and mounting APFS Recovery"
             else
 echo "\nНаходим и подключаем раздел Восстановления"
         fi
+
+recovery_partition=$(diskutil list | grep -m 1 Recovery | rev | cut -f1 -d " " | rev | tr -d '\t\n')
+recovery_name=$(diskutil info $recovery_partition | grep "Volume Name:" | cut -f2 -d ":" | xargs | tr -d '\n')
+
         if [ ! $loc = "ru" ]; then
-                if diskutil mount Recovery; then
+                if diskutil mount "$recovery_name"; then
                     printf ' '
                         else
                     printf '\n!!!! ERROR. UNABLE TO CONTUNUE. BYE !!!!\n\n\n\n\n'
                 exit
                 fi
             else
-                if diskutil quiet mount Recovery; then
+                if diskutil quiet mount "$recovery_name"; then
                     printf '\nРаздел найден и подключен успешно\n'
                         else
                     printf '\n!!!! ОШИБКА. РАЗДЕЛ НЕ ПОДКЛЮЧЕН. ВЫХОД !!!!\n\n\n\n\n'
@@ -151,7 +155,7 @@ echo "\nНаходим и подключаем раздел Восстановл
                 fi
           fi
 
-cd /Volumes/Recovery/*/
+cd /Volumes/"$recovery_name"/*/
 
             if [ ! $loc = "ru" ]; then
 sudo printf '\nUpdating compability boot argument in NVRAM\n'
